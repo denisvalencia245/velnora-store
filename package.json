@@ -1,0 +1,11 @@
+{
+  "name": "velnora",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node scripts/check.mjs",
+    "serve": "node scripts/serve.mjs",
+    "test": "node build.mjs && node scripts/check.mjs"
+  }
+}

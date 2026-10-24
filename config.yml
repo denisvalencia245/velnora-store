@@ -1,0 +1,136 @@
+# Panel privado VELNORA (Decap CMS). Ver README.md para activarlo.
+# 1) Sustituye repo por TU_USUARIO/TU_REPOSITORIO de GitHub.
+# 2) En Netlify: Site configuration > Access & security > OAuth > Install provider (GitHub).
+# Solo quien tenga acceso de escritura al repositorio podrá entrar y guardar cambios.
+backend:
+  name: github
+  repo: TU_USUARIO/TU_REPOSITORIO
+  branch: main
+  commit_messages:
+    create: "Panel: añadir {{collection}} «{{slug}}»"
+    update: "Panel: actualizar {{collection}} «{{slug}}»"
+    delete: "Panel: borrar {{collection}} «{{slug}}»"
+
+# Para probar en local sin GitHub: ejecuta `npx decap-server` y abre /admin/ (descomenta la línea).
+# local_backend: true
+
+locale: es
+site_url: https://TU-DOMINIO
+media_folder: static/img/uploads
+public_folder: /img/uploads
+publish_mode: simple
+show_preview: false
+
+collections:
+  - name: productos
+    label: Productos
+    label_singular: Producto
+    folder: data/products
+    extension: json
+    format: json
+    create: true
+    slug: "{{slug}}"
+    identifier_field: name
+    summary: "{{name}} · {{price}} €"
+    fields:
+      - {label: Publicado, name: published, widget: boolean, default: true, hint: "Desmárcalo para ocultarlo sin borrarlo"}
+      - {label: Demostración, name: demo, widget: boolean, default: false, hint: "Marca el producto como ejemplo (sin enlace de compra, sin datos estructurados de producto)"}
+      - {label: Destacado en inicio, name: featured, widget: boolean, default: false}
+      - {label: Nombre, name: name, widget: string}
+      - {label: Categoría, name: category, widget: relation, collection: categorias, search_fields: [name], value_field: slug, display_fields: [name]}
+      - {label: Subcategoría, name: subcategory, widget: string, required: false}
+      - {label: Descripción corta (máx. 160 caracteres), name: short, widget: string, pattern: ['^.{10,200}$', "Entre 10 y 200 caracteres"]}
+      - {label: Descripción larga, name: description, widget: markdown, required: false, buttons: [bold, italic, link, heading-two, bulleted-list, numbered-list]}
+      - {label: Precio actual (€), name: price, widget: number, value_type: float, min: 0, step: 0.01, required: false}
+      - {label: Precio anterior (€), name: old_price, widget: number, value_type: float, min: 0, step: 0.01, required: false, hint: "Solo si hay oferta real"}
+      - {label: Fecha de verificación del precio, name: price_checked, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false, required: false}
+      - {label: Enlace de afiliado (https://), name: affiliate_url, widget: string, required: false, pattern: ['^https://\S+$', "Debe empezar por https://"], hint: "Pega aquí tu enlace de afiliado real. Vacío = botón desactivado"}
+      - {label: Tienda del vendedor, name: store, widget: string, required: false}
+      - {label: Marca, name: brand, widget: string, required: false}
+      - {label: Formato, name: format, widget: string, required: false}
+      - {label: Compatibilidad, name: compat, widget: string, required: false}
+      - {label: Contenido, name: content, widget: string, required: false}
+      - {label: Licencia, name: license, widget: string, required: false}
+      - {label: Imagen, name: image, widget: image, required: false, hint: "Si no subes imagen se usa un marcador de posición"}
+      - {label: Texto alternativo de la imagen, name: image_alt, widget: string, required: false}
+      - {label: Ventajas, name: pros, widget: list, required: false, field: {label: Ventaja, name: item, widget: string}}
+      - {label: Inconvenientes, name: cons, widget: list, required: false, field: {label: Inconveniente, name: item, widget: string}}
+      - {label: Fecha de alta, name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false}
+
+  - name: categorias
+    label: Categorías
+    label_singular: Categoría
+    folder: data/categories
+    extension: json
+    format: json
+    create: true
+    slug: "{{slug}}"
+    identifier_field: name
+    fields:
+      - {label: Nombre, name: name, widget: string}
+      - {label: Descripción, name: description, widget: text}
+      - {label: Orden, name: order, widget: number, value_type: int, default: 50}
+
+  - name: blog
+    label: Blog
+    label_singular: Artículo
+    folder: data/posts
+    extension: json
+    format: json
+    create: true
+    slug: "{{slug}}"
+    identifier_field: title
+    fields:
+      - {label: Publicado, name: published, widget: boolean, default: true}
+      - {label: Título, name: title, widget: string}
+      - {label: Fecha, name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false}
+      - {label: Descripción (SEO), name: description, widget: text, pattern: ['^.{20,200}$', "Entre 20 y 200 caracteres"]}
+      - {label: Producto relacionado (slug), name: related_product, widget: relation, collection: productos, search_fields: [name], value_field: "{{slug}}", display_fields: [name], required: false}
+      - {label: Contenido, name: body, widget: markdown, buttons: [bold, italic, link, heading-two, heading-three, bulleted-list, numbered-list]}
+
+  - name: ajustes
+    label: Ajustes
+    files:
+      - label: Ajustes del sitio
+        name: config
+        file: data/config.json
+        format: json
+        fields:
+          - {label: Nombre del sitio, name: site_name, widget: string}
+          - {label: Lema, name: tagline, widget: string}
+          - {label: Descripción SEO, name: description, widget: text}
+          - {label: URL pública (https://tudominio.com), name: site_url, widget: string, required: false, hint: "Activa canonical, sitemap y datos estructurados"}
+          - {label: Imagen para compartir (URL https), name: og_image, widget: string, required: false}
+          - {label: Textos legales revisados por un profesional, name: legal_reviewed, widget: boolean, default: false, hint: "Al marcarlo desaparece el aviso de borrador"}
+          - {label: Nota adicional de afiliación (p. ej. aviso obligatorio de un programa), name: affiliate_note, widget: text, required: false}
+          - label: Titular (datos legales)
+            name: owner
+            widget: object
+            fields:
+              - {label: Nombre o razón social, name: name, widget: string, required: false}
+              - {label: NIF/CIF, name: nif, widget: string, required: false}
+              - {label: Domicilio, name: address, widget: string, required: false}
+              - {label: Correo de contacto, name: email, widget: string, required: false}
+          - label: Cookies y analítica
+            name: cookies
+            widget: object
+            fields:
+              - {label: Mostrar aviso de cookies, name: banner, widget: boolean, default: true}
+              - {label: ID de Google Analytics 4 (G-XXXXXXXX), name: ga4_id, widget: string, required: false, hint: "Vacío = sin analítica"}
+          - label: Newsletter
+            name: newsletter
+            widget: object
+            fields:
+              - {label: URL del formulario del proveedor (https), name: action, widget: string, required: false, hint: "Brevo, MailerLite… Vacío = sin newsletter"}
+              - {label: Nombre del campo de correo, name: email_field, widget: string, default: EMAIL}
+      - label: Preguntas frecuentes
+        name: faq
+        file: data/faq.json
+        format: json
+        fields:
+          - label: Preguntas
+            name: items
+            widget: list
+            fields:
+              - {label: Pregunta, name: q, widget: string}
+              - {label: Respuesta, name: a, widget: text}
